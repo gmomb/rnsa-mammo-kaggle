@@ -1,2 +1,3 @@
 28/12: creazione scaffold
 #TODO prima versione con stratificazione del solo target, aggiungere raggruppamenti sui fold
+#TODO aggiungere altre augmentation

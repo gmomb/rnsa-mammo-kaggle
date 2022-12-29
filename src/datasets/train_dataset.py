@@ -13,13 +13,13 @@ class trainMammo(Dataset):
         self.transforms = transforms
 
     def __len__(self):
-        return len(self.img_ids)
+        return self.df.shape[0]
 
     def __getitem__(self, idx:int):
 
         row = self.df.iloc[idx]
         img_path = os.path.join(
-            self.cfg.DATASETS.ROOT_DIR,
+            self.cfg.INPUT.ROOT_DIR,
             'train_images_processed_cv2_256',
             str(row['patient_id']),
             str(row['image_id'])+".png"
@@ -31,12 +31,11 @@ class trainMammo(Dataset):
 
         label = row['cancer']
         img_id = row['image_id']
-        patient = row['patient_id']
+        patient_id = row['patient_id']
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         if self.transforms:
             augmented = self.transforms(image = img)
             img = augmented['image']
 
-        return img, label, img_id, patient
-
+        return img, label, img_id, patient_id

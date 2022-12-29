@@ -9,17 +9,17 @@ from configs import cfg
 if __name__ == '__main__':
     
     path_file = os.path.join(
-        cfg.DATASETS.ROOT_DIR, 'train.csv'
+        cfg.INPUT.ROOT_DIR, 'train.csv'
     )
 
     df = pd.read_csv(path_file)
 
     df['fold'] = -1
     
-    if cfg.DATASETS.STRATIFIED:
+    if cfg.INPUT.STRATIFIED:
         # stratifico i fold per il target
         kf = StratifiedKFold(
-            n_splits=cfg.DATASETS.N_SPLITS, 
+            n_splits=cfg.INPUT.N_SPLITS, 
             shuffle=True,
             random_state=cfg.SEED
         )
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     else:
         # senza stratificazione
         kf = KFold(
-            n_splits=cfg.DATASETS.N_SPLITS, 
+            n_splits=cfg.INPUT.N_SPLITS, 
             shuffle=True, 
             random_state=cfg.SEED
         )
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     df.to_csv(
         os.path.join(
-            cfg.DATASETS.ROOT_DIR,
+            cfg.INPUT.ROOT_DIR,
             'train_folds.csv'
         )
     )

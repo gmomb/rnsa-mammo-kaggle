@@ -1,8 +1,10 @@
 # encoding: utf-8
-import os
+import os, datetime
 
 from pathlib import Path
 from yacs.config import CfgNode as CN
+
+import torch
 
 # -----------------------------------------------------------------------------
 # Convention about Training / Test specific parameters
@@ -24,16 +26,27 @@ _C.DEBUG = True
 _C.SEED = 1234
 _C.VERBOSE = True
 _C.PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
+_C.DEVICE = str(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
 
 _C.MODEL = CN()
-_C.MODEL.DEVICE = "cuda:0"
 _C.MODEL.NUM_CLASSES = 2
 
 # -----------------------------------------------------------------------------
 # INPUT
 # -----------------------------------------------------------------------------
 _C.INPUT = CN()
-_C.INPUT.IMG_SIZE = 1024
+_C.INPUT.IMG_SIZE = 64
+_C.INPUT.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
+# Fold to validate
+_C.INPUT.VALID_FOLD = 1
+# # List of the dataset names for training, as present in paths_catalog.py
+# _C.DATASETS.TRAIN = ()
+# # List of the dataset names for testing, as present in paths_catalog.py
+# _C.DATASETS.TEST = ()
+# Stratifico
+_C.INPUT.STRATIFIED = True
+_C.INPUT.N_SPLITS = 5
+_C.INPUT.TRAIN_BATCH_SIZE = 8
 # RandomSizedCrop paramters
 _C.INPUT.RSC_MIN_MAX_HEIGHT = (int(_C.INPUT.IMG_SIZE*0.7), int(_C.INPUT.IMG_SIZE*0.7))
 _C.INPUT.RSC_HEIGHT = _C.INPUT.IMG_SIZE
@@ -64,22 +77,6 @@ _C.INPUT.COTOUT_FILL_VALUE = 0
 _C.INPUT.COTOUT_PROB = 0.4
 
 # -----------------------------------------------------------------------------
-# Dataset
-# -----------------------------------------------------------------------------
-_C.DATASETS = CN()
-# Root dir of dataset
-_C.DATASETS.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
-# Fold to validate
-_C.DATASETS.VALID_FOLD = 1
-# # List of the dataset names for training, as present in paths_catalog.py
-# _C.DATASETS.TRAIN = ()
-# # List of the dataset names for testing, as present in paths_catalog.py
-# _C.DATASETS.TEST = ()
-# Stratifico
-_C.DATASETS.STRATIFIED = True
-_C.DATASETS.N_SPLITS = 5
-
-# -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------
 _C.DATALOADER = CN()
@@ -90,8 +87,7 @@ _C.DATALOADER.NUM_WORKERS = 2
 # Solver
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.MODEL_NAME = 'tf_efficientdet_d6'
-_C.SOLVER.WEIGHT_PATH = '../weights/tf_efficientdet_d6-51cb0132.pth'
+_C.SOLVER.MODEL_NAME = 'resnet34' #seresnext50_32x4d
 _C.SOLVER.OPTIMIZER_NAME = "SGD"
 _C.SOLVER.NOMINAL_BATCH_SIZE = 64
 _C.SOLVER.SCHEDULER_NAME = "CosineAnnealingWarmRestarts"
@@ -101,7 +97,7 @@ _C.SOLVER.T_MUL = 2
 
 _C.SOLVER.MAX_EPOCHS = 60
 
-_C.SOLVER.BASE_LR = 0.001
+_C.SOLVER.BASE_LR = 1e-3
 _C.SOLVER.BIAS_LR_FACTOR = 1
 
 _C.SOLVER.MOMENTUM = 0.9
@@ -120,7 +116,6 @@ _C.SOLVER.CLEAR_OUTPUT = True
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
-_C.SOLVER.IMS_PER_BATCH = 2
 
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
@@ -131,4 +126,12 @@ _C.TEST.WEIGHT = "/output/best-checkpoint.bin"
 # ---------------------------------------------------------------------------- #
 # Misc options
 # ---------------------------------------------------------------------------- #
-_C.OUTPUT_DIR = "/content/experiments/baseline"
+_C.OUTPUT_DIR = str(os.path.join(
+    _C.PROJECT_ROOT, 
+    'experiments', 
+    _C.SOLVER.MODEL_NAME+'_'+str(datetime.date.today()), 
+))
+
+_C.WEIGHT_PATH = str(os.path.join(
+    _C.OUTPUT_DIR, 'weights', _C.SOLVER.MODEL_NAME+'.path'
+))
