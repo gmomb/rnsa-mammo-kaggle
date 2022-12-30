@@ -22,11 +22,11 @@ import torch
 
 _C = CN()
 
-_C.DEBUG = True
+_C.DEBUG = False
 _C.SEED = 1234
 _C.VERBOSE = True
 _C.PROJECT_ROOT = str(Path(__file__).resolve().parent.parent.parent)
-_C.DEVICE = str(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+_C.DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 _C.MODEL = CN()
 _C.MODEL.NUM_CLASSES = 2
@@ -35,10 +35,10 @@ _C.MODEL.NUM_CLASSES = 2
 # INPUT
 # -----------------------------------------------------------------------------
 _C.INPUT = CN()
-_C.INPUT.IMG_SIZE = 64
+_C.INPUT.IMG_SIZE = 256
 _C.INPUT.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
 # Fold to validate
-_C.INPUT.VALID_FOLD = 1
+_C.INPUT.VALID_FOLD = 3
 # # List of the dataset names for training, as present in paths_catalog.py
 # _C.DATASETS.TRAIN = ()
 # # List of the dataset names for testing, as present in paths_catalog.py
@@ -46,7 +46,7 @@ _C.INPUT.VALID_FOLD = 1
 # Stratifico
 _C.INPUT.STRATIFIED = True
 _C.INPUT.N_SPLITS = 5
-_C.INPUT.TRAIN_BATCH_SIZE = 8
+_C.INPUT.TRAIN_BATCH_SIZE = 32
 # RandomSizedCrop paramters
 _C.INPUT.RSC_MIN_MAX_HEIGHT = (int(_C.INPUT.IMG_SIZE*0.7), int(_C.INPUT.IMG_SIZE*0.7))
 _C.INPUT.RSC_HEIGHT = _C.INPUT.IMG_SIZE
@@ -81,15 +81,15 @@ _C.INPUT.COTOUT_PROB = 0.4
 # -----------------------------------------------------------------------------
 _C.DATALOADER = CN()
 # Number of data loading threads
-_C.DATALOADER.NUM_WORKERS = 2
+_C.DATALOADER.NUM_WORKERS = 4
 
 # ---------------------------------------------------------------------------- #
 # Solver
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.MODEL_NAME = 'resnet34' #seresnext50_32x4d
+_C.SOLVER.MODEL_NAME = 'seresnext50_32x4d' #seresnext50_32x4d
 _C.SOLVER.OPTIMIZER_NAME = "SGD"
-_C.SOLVER.NOMINAL_BATCH_SIZE = 64
+_C.SOLVER.NOMINAL_BATCH_SIZE = 50
 _C.SOLVER.SCHEDULER_NAME = "CosineAnnealingWarmRestarts"
 #_C.SOLVER.SCHEDULER_NAME = "LambdaLR"
 _C.SOLVER.COS_CPOCH = 2

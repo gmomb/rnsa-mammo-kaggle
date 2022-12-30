@@ -1,3 +1,7 @@
 28/12: creazione scaffold
 #TODO prima versione con stratificazione del solo target, aggiungere raggruppamenti sui fold
 #TODO aggiungere altre augmentation
+#TODO provare emea weights
+#TODO inserire label smoothing
+#TODO inserire cutmix ecc nelle immagini
+#TODO togliere label alle immagini iniziali
