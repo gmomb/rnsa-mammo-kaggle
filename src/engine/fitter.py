@@ -194,7 +194,7 @@ class Fitter:
                     preds,
                     targets,
                     #TODO inserire uno scaling per lo sbilanciamento
-                    #pos_weight=torch.tensor([config.POSITIVE_TARGET_WEIGHT]).to(DEVICE)
+                    pos_weight=torch.tensor([self.config.SOLVER.POS_TARGET_WEIGHT]).to(self.device)
                 )
 
             scaled_loss = self.scaler.scale(loss)
