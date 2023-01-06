@@ -28,5 +28,10 @@ def make_optimizer(cfg, model):
         "lr": cfg.SOLVER.BASE_LR}
     ]
     #fix del momentum
-    optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params, momentum=cfg.SOLVER.MOMENTUM, nesterov=True)
+    if cfg.SOLVER.OPTIMIZER_NAME == "SGD":
+        optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params, momentum=cfg.SOLVER.MOMENTUM, nesterov=True)
+    elif cfg.SOLVER.OPTIMIZER_NAME == "Adam":
+        optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params)
+    else:
+        print('Attenzione, ottimizzatore non riconosciuto!')
     return optimizer

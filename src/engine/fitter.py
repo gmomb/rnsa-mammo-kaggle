@@ -7,21 +7,31 @@ import numpy as np
 
 import torch
 from torch.cuda.amp import GradScaler
+from sklearn.metrics import roc_auc_score
 
 from .average import AverageMeter
 
 from utilities.utils import optimal_f1
 from modeling.optimizer import make_optimizer
 from modeling.scheduler import make_scheduler
+from modeling.model import LabelSmoothingCrossEntropy, SmoothBCEwLogits
 
 warnings.filterwarnings("ignore")
 
 class Fitter:
     def __init__(self, model, cfg, train_loader, val_loader, logger):
         self.config = cfg
+        self.device = self.config.DEVICE
         self.epoch = 0
         self.train_loader = train_loader
         self.val_loader = val_loader
+        #self.criterion = LabelSmoothingCrossEntropy(
+        #    self.config.SOLVER.TARGET_SMOOTHING
+        #)
+        self.criterion = SmoothBCEwLogits(
+            pos_weight=torch.Tensor([self.config.SOLVER.POS_TARGET_WEIGHT]).to(self.device),
+            smoothing=self.config.SOLVER.TARGET_SMOOTHING
+        )
 
         self.base_dir = f'{self.config.OUTPUT_DIR}'
         if not os.path.exists(self.base_dir):
@@ -29,10 +39,10 @@ class Fitter:
 
         self.logger = logger
         self.best_final_score = 0.0
+        self.best_auc = 0.0
         self.best_score_threshold = 0.5
 
-        self.model = model.to(self.config.DEVICE)
-        self.device = self.config.DEVICE
+        self.model = model.to(self.device)
 
         self.optimizer = make_optimizer(self.config, self.model)
         self.scheduler = make_scheduler(self.config, self.optimizer, self.train_loader)
@@ -67,15 +77,22 @@ class Fitter:
             self.logger.info(f'[RESULT]: Train. Epoch: {self.epoch}, summary_loss: {summary_loss.avg:.5f}, time: {(time.time() - t):.5f}')
 
             t = time.time()
-            best_score_threshold, best_final_score, summary_loss = self.validation()
+            best_score_threshold, best_final_score, summary_loss, best_auc = self.validation()
 
             if self.scheduler is not None:
                 self.scheduler.step()
 
-            self.logger.info( f'[RESULT]: Val. Epoch: {self.epoch}, Best Score Threshold: {best_score_threshold:.2f}, Best Score: {best_final_score:.5f}, time: {(time.time() - t):.5f}')
-            if best_final_score > self.best_final_score:
+            self.logger.info(
+                f'''[RESULT]: Val. Epoch: {self.epoch}, 
+                    Best Score Threshold: {best_score_threshold:.2f}, '
+                    Best Score: {best_final_score:.5f}, time: {(time.time() - t):.5f}
+                    Best AUC: {best_auc:.4f}
+                '''
+            )
+            if best_auc > self.best_auc:
                 self.best_final_score = best_final_score
                 self.best_score_threshold = best_score_threshold
+                self.best_auc = best_auc
                 self.model.eval()
                 
                 #Create the folder if doesnt exist and save
@@ -126,19 +143,20 @@ class Fitter:
             for step, (images, targets, image_ids, patient_ids) in enumerate(valid_loader):
                 
                 images = images.to(self.device).float()
-                targets = targets.to(self.device).float()
+                targets = targets.to(self.device)
                 batch_size = images.shape[0]
 
                 preds = self.model(images).squeeze()
 
                 #Add logit to the predictions
                 log_preds = torch.sigmoid(preds)
-                loss = torch.nn.functional.binary_cross_entropy_with_logits(
-                    preds,
-                    targets,
-                    #TODO inserire uno scaling per lo sbilanciamento
-                    #pos_weight=torch.tensor([config.POSITIVE_TARGET_WEIGHT]).to(DEVICE)
-                )
+                #loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                #    preds,
+                #    targets,
+                #    #TODO inserire uno scaling per lo sbilanciamento
+                #    #pos_weight=torch.tensor([config.POSITIVE_TARGET_WEIGHT]).to(DEVICE)
+                #)
+                loss = self.criterion(preds, targets)
                 
                 summary_loss.update(loss.detach().item(), batch_size)
 
@@ -151,9 +169,10 @@ class Fitter:
                 #inference(self.all_predictions, images, outputs['detections'], targets, image_ids)
                 valid_loader.set_description(
                     f'Validate Step {step}/{len(self.val_loader)}, ' + \
-                    f'Validation loss {summary_loss.avg:.5f}, ' + \
-                    f'time: {(time.time() - t):.5f}' + \
-                    f'Best score found: {self.best_final_score:.4f}'
+                    f'Validation loss {summary_loss.avg:.2f}, ' + \
+                    f'time: {(time.time() - t):.2f}' + \
+                    f'Best score found: {self.best_final_score:.4f}' + \
+                    f'Best AUC found: {self.best_auc:.4f}'
                 )
         
         fold_predictions = np.concatenate(fold_predictions)
@@ -171,7 +190,8 @@ class Fitter:
             'best_threshold': best_score_threshold,
         })
 
-        return best_score_threshold, best_final_score, summary_loss
+        auc_score = roc_auc_score(self.all_predictions['label'], self.all_predictions['preds'])
+        return best_score_threshold, best_final_score, summary_loss, auc_score
 
     def train_one_epoch(self):
         self.model.train()
@@ -183,25 +203,25 @@ class Fitter:
         for step, (images, targets, _, _) in enumerate(train_loader):
 
             images = images.to(self.device).float()
-            targets = targets.to(self.device).float()
+            targets = targets.to(self.device)
             batch_size = images.shape[0]
             
             self.optimizer.zero_grad()
 
             with torch.autocast(device_type=self.device):
                 preds = self.model(images).squeeze()
-                loss = torch.nn.functional.binary_cross_entropy_with_logits(
-                    preds,
-                    targets,
-                    #TODO inserire uno scaling per lo sbilanciamento
-                    pos_weight=torch.tensor([self.config.SOLVER.POS_TARGET_WEIGHT]).to(self.device)
-                )
+                loss = self.criterion(preds, targets)
+                #loss = torch.nn.functional.binary_cross_entropy_with_logits(
+                #    preds,
+                #    targets,
+                #    #TODO inserire uno scaling per lo sbilanciamento
+                #    pos_weight=torch.tensor([self.config.SOLVER.POS_TARGET_WEIGHT]).to(self.device)
+                #)
 
-            scaled_loss = self.scaler.scale(loss)
-            scaled_loss.backward()
+            self.scaler.scale(loss).backward()
             self.scaler.step(self.optimizer)
 
-            summary_loss.update(scaled_loss.detach().item(), batch_size)
+            summary_loss.update(loss.detach().item(), batch_size)
             self.scaler.update()
 
             #Optimize con gradient accumulation

@@ -1,6 +1,7 @@
 import logging, datetime, os
 from pathlib import Path
 import pandas as pd
+import torch
 
 from datasets import create_train_loader, create_valid_loader
 from configs import cfg
@@ -21,6 +22,8 @@ logger = logging.getLogger()
 
 if __name__ == '__main__':
 
+    torch.cuda.empty_cache()
+    
     seed_everything(cfg.SEED)
     
     #LEggo il dataframe
@@ -56,6 +59,9 @@ if __name__ == '__main__':
         val_loader=valid_loader,
         logger=logger,
     )
+
+    #Start the training
+    logging.info(f'Started training with parameters: {cfg}')
 
     engine.fit()
     #engine.final_check()

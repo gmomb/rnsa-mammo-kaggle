@@ -38,7 +38,7 @@ _C.INPUT = CN()
 _C.INPUT.IMG_SIZE = 256
 _C.INPUT.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
 # Fold to validate
-_C.INPUT.VALID_FOLD = 3
+_C.INPUT.VALID_FOLD = 0
 # # List of the dataset names for training, as present in paths_catalog.py
 # _C.DATASETS.TRAIN = ()
 # # List of the dataset names for testing, as present in paths_catalog.py
@@ -48,33 +48,16 @@ _C.INPUT.STRATIFIED = True
 _C.INPUT.N_SPLITS = 5
 _C.INPUT.TRAIN_BATCH_SIZE = 32
 # RandomSizedCrop paramters
-_C.INPUT.RSC_MIN_MAX_HEIGHT = (int(_C.INPUT.IMG_SIZE*0.7), int(_C.INPUT.IMG_SIZE*0.7))
 _C.INPUT.RSC_HEIGHT = _C.INPUT.IMG_SIZE
 _C.INPUT.RSC_WIDTH = _C.INPUT.IMG_SIZE
+_C.INPUT.RSC_SCALE = (0.8, 1)
+_C.INPUT.RSC_RATIO = (0.45, 0.55)
 _C.INPUT.RSC_PROB = 0.5
-# HueSaturationValue paramters
-_C.INPUT.HSV_H = 0.2
-_C.INPUT.HSV_S = 0.2
-_C.INPUT.HSV_V = 0.2
-_C.INPUT.HSV_PROB = 0.9
-# RandomBrightnessContrast paramters
-_C.INPUT.BC_B = 0.2
-_C.INPUT.BC_C = 0.2
-_C.INPUT.BC_PROB = 0.9
-# Color paramters
-_C.INPUT.COLOR_PROB = 0.9
-# Random probability for ToGray
-_C.INPUT.TOFGRAY_PROB = 0.01
-# Random probability for HorizontalFlip
+
+# Random HorizontalFlip
 _C.INPUT.HFLIP_PROB = 0.5
-# Random probability for VerticalFlip
-_C.INPUT.VFLIP_PROB = 0.5
-# Coutout paramters
-_C.INPUT.COTOUT_NUM_HOLES = 8
-_C.INPUT.COTOUT_MAX_H_SIZE = 64
-_C.INPUT.COTOUT_MAX_W_SIZE = 64
-_C.INPUT.COTOUT_FILL_VALUE = 0
-_C.INPUT.COTOUT_PROB = 0.4
+#Random rotate
+_C.INPUT.ROTATE_PROB = 0.5
 
 # -----------------------------------------------------------------------------
 # DataLoader
@@ -88,16 +71,17 @@ _C.DATALOADER.NUM_WORKERS = 4
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
 _C.SOLVER.MODEL_NAME = 'seresnext50_32x4d' #seresnext50_32x4d
-_C.SOLVER.OPTIMIZER_NAME = "SGD"
+_C.SOLVER.OPTIMIZER_NAME = "Adam"
 _C.SOLVER.NOMINAL_BATCH_SIZE = 50
 _C.SOLVER.SCHEDULER_NAME = "CosineAnnealingWarmRestarts"
 #_C.SOLVER.SCHEDULER_NAME = "LambdaLR"
+_C.SOLVER.TARGET_SMOOTHING = 0.1
 _C.SOLVER.COS_CPOCH = 2
 _C.SOLVER.T_MUL = 2
 
 _C.SOLVER.MAX_EPOCHS = 60
 
-_C.SOLVER.BASE_LR = 1e-3
+_C.SOLVER.BASE_LR = 4e-4
 _C.SOLVER.BIAS_LR_FACTOR = 1
 
 _C.SOLVER.MOMENTUM = 0.9

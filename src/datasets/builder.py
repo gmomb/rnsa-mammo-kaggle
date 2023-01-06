@@ -33,7 +33,7 @@ def create_train_loader(cfg, df):
 def create_valid_loader(cfg, df):
 
     #create valid transformation
-    valid_trnsf = get_train_transform(
+    valid_trnsf = get_valid_transform(
         cfg=cfg
     )
 
