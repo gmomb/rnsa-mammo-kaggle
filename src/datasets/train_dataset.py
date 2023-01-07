@@ -20,7 +20,7 @@ class trainMammo(Dataset):
         row = self.df.iloc[idx]
         img_path = os.path.join(
             self.cfg.INPUT.ROOT_DIR,
-            'train_images_processed_cv2_256',
+            'cut_off_image512x1024',
             str(row['patient_id']),
             str(row['image_id'])+".png"
         )

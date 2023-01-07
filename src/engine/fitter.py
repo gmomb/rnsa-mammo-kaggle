@@ -19,9 +19,10 @@ from modeling.model import LabelSmoothingCrossEntropy, SmoothBCEwLogits
 warnings.filterwarnings("ignore")
 
 class Fitter:
-    def __init__(self, model, cfg, train_loader, val_loader, logger):
+    def __init__(self, model, cfg, train_loader, val_loader, logger, neptune_runner):
         self.config = cfg
         self.device = self.config.DEVICE
+        self.neptune_runner = neptune_runner
         self.epoch = 0
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -89,7 +90,7 @@ class Fitter:
                     Best AUC: {best_auc:.4f}
                 '''
             )
-            if best_auc > self.best_auc:
+            if best_final_score > self.best_final_score:
                 self.best_final_score = best_final_score
                 self.best_score_threshold = best_score_threshold
                 self.best_auc = best_auc
@@ -160,6 +161,8 @@ class Fitter:
                 
                 summary_loss.update(loss.detach().item(), batch_size)
 
+                self.neptune_runner["valid/batch/loss"].log(loss.detach().item())
+
                 fold_predictions.append(log_preds.detach().cpu().numpy())
                 fold_img_ids.append(image_ids.detach().cpu().numpy())
                 fold_targets.append(targets.detach().cpu().numpy())
@@ -191,6 +194,11 @@ class Fitter:
         })
 
         auc_score = roc_auc_score(self.all_predictions['label'], self.all_predictions['preds'])
+
+        self.neptune_runner["valid/auc_score"].log(auc_score)
+        self.neptune_runner["valid/betaf1_best"].log(best_final_score)
+        self.neptune_runner["valid/betaf1_thr"].log(best_score_threshold)
+
         return best_score_threshold, best_final_score, summary_loss, auc_score
 
     def train_one_epoch(self):
@@ -220,6 +228,8 @@ class Fitter:
 
             self.scaler.scale(loss).backward()
             self.scaler.step(self.optimizer)
+
+            self.neptune_runner["train/batch/loss"].log(loss.detach().item())
 
             summary_loss.update(loss.detach().item(), batch_size)
             self.scaler.update()

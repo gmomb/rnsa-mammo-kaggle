@@ -1,9 +1,30 @@
 28/12: creazione scaffold
-#TODO prima versione con stratificazione del solo target, aggiungere raggruppamenti sui fold
-#TODO aggiungere altre augmentation
-#TODO provare emea weights
-#TODO inserire label smoothing - fatto
-#TODO inserire cutmix ecc nelle immagini
-#TODO togliere label alle immagini iniziali
+#-----------------------------------------------------------------------------------------------------#
+|                         TODO                                                                        |
+#-----------------------------------------------------------------------------------------------------#
+prima versione con stratificazione del solo target, aggiungere raggruppamenti sui fold
+aggiungere altre augmentation
+provare emea weights
+inserire cutmix ecc nelle immagini
+inserire https://github.com/louis-she/exhaustive-weighted-random-sampler/blob/main/exhaustive_weighted_random_sampler/__init__.py
+stratificazione per ID paziente
 
-4/1: implementato label smoothing con pos_weight
+#-----------------------------------------------------------------------------------------------------#
+|                         TEST                                                                        |
+#-----------------------------------------------------------------------------------------------------#
+6/1: implementato label smoothing con pos_weight, immagini pulite su kaggle
+
+CV_score: 0.15
+LB_score: 0.19
+
++7/1: aumento dimensioni immagini
+
+CV_score: 0.20
+LB_score: in scoring
+
++ aumentato augmentation con vertical, horizonal, cutout
+
+CV_score: in training
+LB_score: da fare
+
+

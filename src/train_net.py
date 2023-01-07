@@ -2,6 +2,7 @@ import logging, datetime, os
 from pathlib import Path
 import pandas as pd
 import torch
+import neptune.new as neptune
 
 from datasets import create_train_loader, create_valid_loader
 from configs import cfg
@@ -9,6 +10,12 @@ from modeling.model import kaggleBCModel
 from engine.fitter import Fitter
 from utilities.utils import seed_everything
 
+run = neptune.init_run(
+    project="geno/rsna-mammo-kaggle",
+    api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJjMjA5NDA5Zi1kYTdhLTQ5MGMtOTU4Ni02ODU0YmJkNTdlNDQifQ==",
+)
+
+run['parameters'] = cfg
 
 Path(cfg.OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
@@ -58,6 +65,7 @@ if __name__ == '__main__':
         train_loader=train_loader,
         val_loader=valid_loader,
         logger=logger,
+        neptune_runner = run
     )
 
     #Start the training
@@ -66,3 +74,5 @@ if __name__ == '__main__':
     engine.fit()
     #engine.final_check()
     #engine.compute_shift()
+
+    run.stop()
