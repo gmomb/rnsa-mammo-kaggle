@@ -166,7 +166,7 @@ class Fitter:
                 fold_predictions.append(log_preds.detach().cpu().numpy())
                 fold_img_ids.append(image_ids.detach().cpu().numpy())
                 fold_targets.append(targets.detach().cpu().numpy())
-                fold_patient_ids.append(patient_ids.detach().cpu().numpy())
+                fold_patient_ids.append(np.array(patient_ids))
 
                 #TODO: creare un layer di inferenza
                 #inference(self.all_predictions, images, outputs['detections'], targets, image_ids)
@@ -182,16 +182,22 @@ class Fitter:
         fold_img_ids = np.concatenate(fold_img_ids)
         fold_targets = np.concatenate(fold_targets)
         fold_patient_ids = np.concatenate(fold_patient_ids)
-
-        best_final_score, best_score_threshold = optimal_f1(fold_targets, fold_predictions)
-
-        self.all_predictions = pd.DataFrame({
+        
+        all_predictions = pd.DataFrame({
             'patient_ids': fold_patient_ids,
             'img_ids': fold_img_ids,
             'label': fold_targets,
             'preds': fold_predictions,
-            'best_threshold': best_score_threshold,
         })
+
+        # Per patient validation
+        self.all_predictions = all_predictions.groupby(
+            by = ['patient_ids'], as_index=False
+        )[['label', 'preds']].mean()
+
+        best_final_score, best_score_threshold = optimal_f1(
+            self.all_predictions['label'], self.all_predictions['preds']
+        )
 
         auc_score = roc_auc_score(self.all_predictions['label'], self.all_predictions['preds'])
 

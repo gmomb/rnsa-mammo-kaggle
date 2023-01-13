@@ -32,6 +32,8 @@ def make_optimizer(cfg, model):
         optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params, momentum=cfg.SOLVER.MOMENTUM, nesterov=True)
     elif cfg.SOLVER.OPTIMIZER_NAME == "Adam":
         optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params)
+    elif cfg.SOLVER.OPTIMIZER_NAME == "AdamW":
+        optimizer = getattr(torch.optim, cfg.SOLVER.OPTIMIZER_NAME)(params, weight_decay = cfg.SOLVER.WEIGHT_DECAY)
     else:
         print('Attenzione, ottimizzatore non riconosciuto!')
     return optimizer

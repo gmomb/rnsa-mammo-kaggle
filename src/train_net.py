@@ -1,4 +1,4 @@
-import logging, datetime, os
+import logging, datetime, os, argparse
 from pathlib import Path
 import pandas as pd
 import torch
@@ -30,7 +30,15 @@ logger = logging.getLogger()
 if __name__ == '__main__':
 
     torch.cuda.empty_cache()
-    
+
+    parser =  argparse.ArgumentParser(
+        prog = 'KaggleRSNA',
+    )
+    parser.add_argument('--debug', default=False, type=bool)
+
+    args = parser.parse_args()
+
+    ##cfg.DEBUG = args.debug
     seed_everything(cfg.SEED)
     
     #LEggo il dataframe

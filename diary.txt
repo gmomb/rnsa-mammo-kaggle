@@ -2,12 +2,24 @@
 #-----------------------------------------------------------------------------------------------------#
 |                         TODO                                                                        |
 #-----------------------------------------------------------------------------------------------------#
-prima versione con stratificazione del solo target, aggiungere raggruppamenti sui fold
 aggiungere altre augmentation
 provare emea weights
 inserire cutmix ecc nelle immagini
 inserire https://github.com/louis-she/exhaustive-weighted-random-sampler/blob/main/exhaustive_weighted_random_sampler/__init__.py
-stratificazione per ID paziente
+TTA
+cominciare a guardare dove sbaglia il modello
+usare 5 folds
+roi dataset - https://www.kaggle.com/code/remekkinas/breast-cancer-roi-brest-extractor/comments object detector/opencv
+provare modelli con squueze excite o modelli con attention layer
+finetuning parametri dell'ottimizzatore
+aggiungere Auxiliari predictor
+ensemble, blending
+
+#-----------------------------------------------------------------------------------------------------#
+|                         findings                                                                    |
+#-----------------------------------------------------------------------------------------------------#
+riducendo il batch size (per aumentare risoluzione) a 16 lo score si riduce a 0.219
+stratificando per id paziente peggioro la lb
 
 #-----------------------------------------------------------------------------------------------------#
 |                         TEST                                                                        |
@@ -20,11 +32,18 @@ LB_score: 0.19
 +7/1: aumento dimensioni immagini
 
 CV_score: 0.20
-LB_score: in scoring
+LB_score: 0.25
 
 + aumentato augmentation con vertical, horizonal, cutout
 
-CV_score: in training
+CV_score: 0.2419
+LB_score: 0.28
+
++ stratifico per id paziente -> nope
+
+CV_score: 0.21
 LB_score: da fare
+
++cambio modello tf_efficientnetv2_s e ottimizzare AdamW con weigh decay
 
 

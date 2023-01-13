@@ -31,7 +31,7 @@ class trainMammo(Dataset):
 
         label = row['cancer']
         img_id = row['image_id']
-        patient_id = row['patient_id']
+        patient_id = str(row['patient_id']) + '_' + str(row['laterality'])
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         if self.transforms:
