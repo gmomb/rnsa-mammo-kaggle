@@ -269,6 +269,7 @@ class Fitter:
             'epoch': self.epoch,
         }, path)
 
+    #Se modello viene salvato internamente
     def load(self, path):
         checkpoint = torch.load(path)
         self.model.load_state_dict(checkpoint['model_state_dict'])

@@ -35,7 +35,7 @@ _C.MODEL.NUM_CLASSES = 2
 # INPUT
 # -----------------------------------------------------------------------------
 _C.INPUT = CN()
-_C.INPUT.IMG_SIZE = 256
+_C.INPUT.IMG_SIZE = 384
 _C.INPUT.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
 # Fold to validate
 _C.INPUT.VALID_FOLD = 0
@@ -46,7 +46,7 @@ _C.INPUT.VALID_FOLD = 0
 # Stratifico
 _C.INPUT.STRATIFIED = True
 _C.INPUT.N_SPLITS = 5
-_C.INPUT.TRAIN_BATCH_SIZE = 32
+_C.INPUT.TRAIN_BATCH_SIZE = 16
 # RandomSizedCrop paramters
 _C.INPUT.RSC_HEIGHT = _C.INPUT.IMG_SIZE
 _C.INPUT.RSC_WIDTH = _C.INPUT.IMG_SIZE
@@ -71,23 +71,25 @@ _C.INPUT.ROTATE_PROB = 0.5
 # -----------------------------------------------------------------------------
 _C.DATALOADER = CN()
 # Number of data loading threads
-_C.DATALOADER.NUM_WORKERS = 4
+_C.DATALOADER.NUM_WORKERS = 2
 
 # ---------------------------------------------------------------------------- #
 # Solver
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.MODEL_NAME = 'seresnext50_32x4d'
-_C.SOLVER.OPTIMIZER_NAME = "Adam"
+_C.SOLVER.MODEL_NAME = 'nextvit'
+_C.SOLVER.OPTIMIZER_NAME = "AdamW"
 _C.SOLVER.NOMINAL_BATCH_SIZE = 50
 _C.SOLVER.SCHEDULER_NAME = "LambdaLR"
+_C.SOLVER.PRETRAINED = True
 #_C.SOLVER.SCHEDULER_NAME = "LambdaLR"
 _C.SOLVER.TARGET_SMOOTHING = 0.1
 _C.SOLVER.MAX_EPOCHS = 5
-_C.SOLVER.BASE_LR = 1e-4
-_C.SOLVER.POS_TARGET_WEIGHT = 20
+_C.SOLVER.BASE_LR = 1e-5
+_C.SOLVER.POS_TARGET_WEIGHT = 1
 _C.SOLVER.LR_MULT = 0.9
-_C.SOLVER.WEIGHT_DECAY = 1e-2
+_C.SOLVER.WEIGHT_DECAY = 1e-8
+_C.SOLVER.PRETRAINED_PATH = "/home/giorgio/Scrivania/kaggle/rnsa-mammo-kaggle/data/nextvit_base_in1k_384.pth"
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch
@@ -96,7 +98,6 @@ _C.SOLVER.WEIGHT_DECAY = 1e-2
 # see 2 images per batch
 _C.TEST = CN()
 _C.TEST.IMS_PER_BATCH = 4
-_C.TEST.WEIGHT = "/output/best-checkpoint.bin"
 
 # ---------------------------------------------------------------------------- #
 # Misc options

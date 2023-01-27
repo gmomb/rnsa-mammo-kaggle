@@ -6,7 +6,8 @@ import neptune.new as neptune
 
 from datasets import create_train_loader, create_valid_loader
 from configs import cfg
-from modeling.model import kaggleBCModel
+from modeling.model import kaggleBCModel, kaggleNextVIT
+
 from engine.fitter import Fitter
 from utilities.utils import seed_everything
 
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     valid_loader = create_valid_loader(cfg, df=valid_df)
 
     #Istanzio il modello
-    model = kaggleBCModel(cfg)
+    model = kaggleNextVIT(cfg)
 
     #Istanzio il fitter
     engine = Fitter(

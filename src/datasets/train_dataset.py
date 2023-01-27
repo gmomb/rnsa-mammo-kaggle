@@ -26,14 +26,15 @@ class trainMammo(Dataset):
         )
 
         img = cv2.imread(
-            img_path
+            img_path,
+            cv2.IMREAD_GRAYSCALE
         )
 
         label = row['cancer']
         img_id = row['image_id']
         patient_id = str(row['patient_id']) + '_' + str(row['laterality'])
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         if self.transforms:
             augmented = self.transforms(image = img)
             img = augmented['image']

@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from torch.nn.modules.loss import _WeightedLoss
 from timm import create_model
 
+from .next_vit import nextvit_base
+
 class kaggleBCModel(torch.nn.Module):
     def __init__(self, cfg) -> None:
         super().__init__()
@@ -25,6 +27,26 @@ class kaggleBCModel(torch.nn.Module):
         preds = self.fc_output(x)
 
         return preds
+
+class kaggleNextVIT(torch.nn.Module):
+    def __init__(self, cfg) -> None:
+        super().__init__()
+
+        self.cfg = cfg
+        #TODO: ricordarsi nella prediction di fare un sigmoid dopo l'output
+        #inchans=1 per avere solo un layer nell'immagine
+        self.encoder = nextvit_base()
+        if cfg.SOLVER.PRETRAINED:
+            checkpoint = torch.load(self.cfg.SOLVER.PRETRAINED_PATH)
+            self.encoder.load_state_dict(checkpoint['model'])
+
+        self.encoder.proj_head = torch.nn.Linear(in_features=1024, out_features=1)
+            
+    def forward(self, x):
+
+        x = self.encoder(x)
+
+        return x
 
 #https://github.com/rwightman/pytorch-image-models/blob/main/timm/loss/cross_entropy.py
 class LabelSmoothingCrossEntropy(torch.nn.Module):
