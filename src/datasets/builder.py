@@ -2,7 +2,7 @@ import os
 
 from torch.utils.data import DataLoader
 
-from .train_dataset import trainMammo
+from .train_dataset import trainMammo, BalanceSampler
 from .transforms import get_train_transform, get_valid_transform
 
 def create_train_loader(cfg, df):
@@ -19,13 +19,17 @@ def create_train_loader(cfg, df):
         transforms=train_trnsf
     )
 
+    balanced_sampler = BalanceSampler(
+        dataset=df, ratio=cfg.INPUT.POSITIVE_PER_BATCH
+    )
+
     #build training iterator
     train_loader = DataLoader(
         train_dataset,
         batch_size=cfg.INPUT.TRAIN_BATCH_SIZE,
-        shuffle=True,
         num_workers=cfg.DATALOADER.NUM_WORKERS,
-        drop_last=True
+        drop_last=True,
+        sampler=balanced_sampler,
     )
 
     return train_loader

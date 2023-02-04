@@ -5,7 +5,6 @@ import torch
 import torch.utils.checkpoint as checkpoint
 from einops import rearrange
 from timm.models.layers import DropPath, trunc_normal_
-from timm.models.registry import register_model
 from torch import nn
 
 NORM_EPS = 1e-5
@@ -412,19 +411,16 @@ class NextViT(nn.Module):
         return x
 
 
-@register_model
 def nextvit_small(pretrained=False, pretrained_cfg=None, **kwargs):
     model = NextViT(stem_chs=[64, 32, 64], depths=[3, 4, 10, 3], path_dropout=0.1, **kwargs)
     return model
 
 
-@register_model
 def nextvit_base(pretrained=False, pretrained_cfg=None, **kwargs):
     model = NextViT(stem_chs=[64, 32, 64], depths=[3, 4, 20, 3], path_dropout=0.2, **kwargs)
     return model
 
 
-@register_model
 def nextvit_large(pretrained=False, pretrained_cfg=None, **kwargs):
     model = NextViT(stem_chs=[64, 32, 64], depths=[3, 4, 30, 3], path_dropout=0.2, **kwargs)
     return model

@@ -4,7 +4,6 @@
 #-----------------------------------------------------------------------------------------------------#
 aggiungere altre augmentation
 provare emea weights
-inserire cutmix ecc nelle immagini
 inserire https://github.com/louis-she/exhaustive-weighted-random-sampler/blob/main/exhaustive_weighted_random_sampler/__init__.py
 TTA
 cominciare a guardare dove sbaglia il modello
@@ -12,8 +11,9 @@ usare 5 folds
 roi dataset - https://www.kaggle.com/code/remekkinas/breast-cancer-roi-brest-extractor/comments object detector/opencv
 provare modelli con squueze excite o modelli con attention layer
 finetuning parametri dell'ottimizzatore
-aggiungere Auxiliari predictor
+aggiungere Auxiliari predictor > fatto
 ensemble, blending
+
 
 #-----------------------------------------------------------------------------------------------------#
 |                         findings                                                                    |
@@ -44,6 +44,15 @@ LB_score: 0.28
 CV_score: 0.21
 LB_score: da fare
 
-+cambio modello tf_efficientnetv2_s e ottimizzare AdamW con weigh decay
+31/1: aggiunto modello nextvit ed aux loss
 
+CV: in training su kaggle
+LB: da fare
+
+31/1: aggiungo aux loss a seresnext50, il modello non riesce a fittare meh provo cose
+
+4/2: cambio dataset di train voi_lut
+
+CV_score: in training
+LB_score: da provare
 

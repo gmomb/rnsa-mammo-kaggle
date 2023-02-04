@@ -35,24 +35,27 @@ _C.MODEL.NUM_CLASSES = 2
 # INPUT
 # -----------------------------------------------------------------------------
 _C.INPUT = CN()
-_C.INPUT.IMG_SIZE = 384
+_C.INPUT.IMG_HEIGHT = 1280
+_C.INPUT.IMG_WIDTH = 800
+
 _C.INPUT.ROOT_DIR = os.path.join(_C.PROJECT_ROOT, 'data')
 # Fold to validate
-_C.INPUT.VALID_FOLD = 0
+_C.INPUT.VALID_FOLD = 3
 # # List of the dataset names for training, as present in paths_catalog.py
 # _C.DATASETS.TRAIN = ()
 # # List of the dataset names for testing, as present in paths_catalog.py
 # _C.DATASETS.TEST = ()
 # Stratifico
 _C.INPUT.STRATIFIED = True
+
 _C.INPUT.N_SPLITS = 5
-_C.INPUT.TRAIN_BATCH_SIZE = 16
-# RandomSizedCrop paramters
-_C.INPUT.RSC_HEIGHT = _C.INPUT.IMG_SIZE
-_C.INPUT.RSC_WIDTH = _C.INPUT.IMG_SIZE
-_C.INPUT.RSC_SCALE = (0.8, 1)
-_C.INPUT.RSC_RATIO = (0.45, 0.55)
-_C.INPUT.RSC_PROB = 0.5
+_C.INPUT.TRAIN_BATCH_SIZE = 4
+#Balanced Sampler
+_C.INPUT.POSITIVE_PER_BATCH = 4 # 1/N per batch
+
+#AUX targets
+_C.INPUT.AUX_TARGETS = ['site_id', 'laterality', 'view', 'age', 'implant', 'machine_id']
+
 # Coutout paramters
 _C.INPUT.COTOUT_NUM_HOLES = 8
 _C.INPUT.COTOUT_MAX_H_SIZE = 64
@@ -61,11 +64,9 @@ _C.INPUT.COTOUT_FILL_VALUE = 0
 _C.INPUT.COTOUT_PROB = 0.4
 
 
-# Random HorizontalFlip
+# Random HorizontalFlip/Vertical
 _C.INPUT.HFLIP_PROB = 0.5
-#Random rotate
-_C.INPUT.ROTATE_PROB = 0.5
-
+_C.INPUT.VFLIP_PROB = 0.5
 # -----------------------------------------------------------------------------
 # DataLoader
 # -----------------------------------------------------------------------------
@@ -77,7 +78,7 @@ _C.DATALOADER.NUM_WORKERS = 2
 # Solver
 # ---------------------------------------------------------------------------- #
 _C.SOLVER = CN()
-_C.SOLVER.MODEL_NAME = 'nextvit'
+_C.SOLVER.MODEL_NAME = 'seresnext50_32x4d'
 _C.SOLVER.OPTIMIZER_NAME = "AdamW"
 _C.SOLVER.NOMINAL_BATCH_SIZE = 50
 _C.SOLVER.SCHEDULER_NAME = "LambdaLR"
@@ -85,11 +86,12 @@ _C.SOLVER.PRETRAINED = True
 #_C.SOLVER.SCHEDULER_NAME = "LambdaLR"
 _C.SOLVER.TARGET_SMOOTHING = 0.1
 _C.SOLVER.MAX_EPOCHS = 5
-_C.SOLVER.BASE_LR = 1e-5
+_C.SOLVER.BASE_LR = 1e-4
 _C.SOLVER.POS_TARGET_WEIGHT = 1
 _C.SOLVER.LR_MULT = 0.9
 _C.SOLVER.WEIGHT_DECAY = 1e-8
 _C.SOLVER.PRETRAINED_PATH = "/home/giorgio/Scrivania/kaggle/rnsa-mammo-kaggle/data/nextvit_base_in1k_384.pth"
+_C.SOLVER.AUX_FACTOR = 8
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch

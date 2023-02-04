@@ -8,25 +8,53 @@ from timm import create_model
 from .next_vit import nextvit_base
 
 class kaggleBCModel(torch.nn.Module):
-    def __init__(self, cfg) -> None:
+    def __init__(self, aux_class, cfg) -> None:
         super().__init__()
 
         self.cfg = cfg
         #TODO: ricordarsi nella prediction di fare un sigmoid dopo l'output
-        #inchans=1 per avere solo un layer nell'immagine
-        self.model = create_model(self.cfg.SOLVER.MODEL_NAME, pretrained=True, num_classes=0, in_chans = 1)
+        self.register_buffer('mean', torch.FloatTensor([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
+        self.register_buffer('std', torch.FloatTensor([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
+        self.encoder = create_model(
+            self.cfg.SOLVER.MODEL_NAME, pretrained=True, in_chans = 3
+        )
 
-        self.fe_dim = list(self.model.parameters())[-1].shape[0]
-        self.fc_output = torch.nn.Sequential(
+        self.fe_dim = self.encoder.fc.in_features
+        
+        self.cancer_layer = torch.nn.Sequential(
             torch.nn.Linear(self.fe_dim, 1),
         )
 
+        self.aux_layer = torch.nn.ModuleList([
+            torch.nn.Linear(self.fe_dim, aux_dim) for aux_dim in aux_class
+        ])
+
     def forward(self, x):
 
-        x = self.model(x)
-        preds = self.fc_output(x)
+        x = (x - self.mean) / self.std
 
-        return preds
+        e = self.encoder.forward_features(x)
+        x = F.adaptive_avg_pool2d(e, 1)
+        x = torch.flatten(x,1,3)
+        cancer = self.cancer_layer(x).reshape(-1)
+
+        aux_pred = []
+        for layer in self.aux_layer:
+            aux_pred.append(layer(x))
+
+        return cancer, aux_pred
+
+    def predict(self, x):
+    
+        #return sigmod/softmax
+        cancer_logits, aux_logits = self.forward(x)
+
+        x_aux = []
+        for layer in aux_logits:
+            x_aux.append(torch.softmax(layer, dim=1))
+
+        return torch.sigmoid(cancer_logits), x_aux
+
 
 class kaggleNextVIT(torch.nn.Module):
     def __init__(self, cfg) -> None:
