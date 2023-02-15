@@ -76,6 +76,69 @@ class kaggleNextVIT(torch.nn.Module):
 
         return x
 
+def gem(x, p=3, eps=1e-6):
+    return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1.0 / p)
+
+
+class GeM(torch.nn.Module):
+    def __init__(self, p=3, eps=1e-6, p_trainable=False):
+        super(GeM, self).__init__()
+        if p_trainable:
+            self.p = torch.nn.Parameter(torch.ones(1) * p)
+        else:
+            self.p = p
+        self.eps = eps
+
+    def forward(self, x):
+        ret = gem(x, p=self.p, eps=self.eps)
+        return ret
+
+    def __repr__(self):
+        return (self.__class__.__name__  + f"(p={self.p.data.tolist()[0]:.4f},eps={self.eps})")
+
+
+class kaggleResnNext(torch.nn.Module):
+
+    def __init__(self, cfg, aux_class):
+        super(kaggleResnNext, self).__init__()
+
+        self.cfg = cfg
+        #Input N1HW
+        self.register_buffer('mean', torch.FloatTensor([0.5]).reshape(1, 1, 1, 1))
+        self.register_buffer('std', torch.FloatTensor([0.5]).reshape(1, 1, 1, 1))
+        self.encoder = create_model(
+            self.cfg.SOLVER.MODEL_NAME,
+            pretrained=True, 
+            num_classes=0, 
+            global_pool="", 
+            in_chans=1
+        )
+    
+        in_chans = self.encoder.feature_info[-1]['num_chs']
+
+        self.global_pool = GeM(p_trainable=False)
+        
+        self.cancer_layer = torch.nn.Linear(in_chans, 1)
+        
+        self.aux_layer = torch.nn.ModuleList([
+            torch.nn.Linear(in_chans, aux_dim) for aux_dim in aux_class
+        ])
+        
+
+    def forward(self, x):
+        
+        x = (x - self.mean) / self.std
+
+        x = self.encoder(x)
+        x = self.global_pool(x)
+        x = x[:,:,0,0]
+        cancer = self.cancer_layer(x)
+        aux_pred = []
+        for layer in self.aux_layer:
+            aux_pred.append(layer(x))
+        
+        return cancer, aux_pred
+
 #https://github.com/rwightman/pytorch-image-models/blob/main/timm/loss/cross_entropy.py
 class LabelSmoothingCrossEntropy(torch.nn.Module):
     """ NLL loss with label smoothing.

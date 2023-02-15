@@ -51,8 +51,8 @@ LB: da fare
 
 31/1: aggiungo aux loss a seresnext50, il modello non riesce a fittare meh provo cose
 
-4/2: cambio dataset di train voi_lut
+4/2: cambio dataset di train voi_lut efficientnetb2 1280 800
 
-CV_score: in training
+CV_score: 0.286
 LB_score: da provare
 

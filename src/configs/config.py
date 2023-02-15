@@ -84,14 +84,14 @@ _C.SOLVER.NOMINAL_BATCH_SIZE = 50
 _C.SOLVER.SCHEDULER_NAME = "LambdaLR"
 _C.SOLVER.PRETRAINED = True
 #_C.SOLVER.SCHEDULER_NAME = "LambdaLR"
-_C.SOLVER.TARGET_SMOOTHING = 0.1
+_C.SOLVER.TARGET_SMOOTHING = 0
 _C.SOLVER.MAX_EPOCHS = 5
 _C.SOLVER.BASE_LR = 1e-4
 _C.SOLVER.POS_TARGET_WEIGHT = 1
 _C.SOLVER.LR_MULT = 0.9
 _C.SOLVER.WEIGHT_DECAY = 1e-8
 _C.SOLVER.PRETRAINED_PATH = "/home/giorgio/Scrivania/kaggle/rnsa-mammo-kaggle/data/nextvit_base_in1k_384.pth"
-_C.SOLVER.AUX_FACTOR = 8
+_C.SOLVER.AUX_FACTOR = 4
 # Number of images per batch
 # This is global, so if we have 8 GPUs and IMS_PER_BATCH = 16, each GPU will
 # see 2 images per batch

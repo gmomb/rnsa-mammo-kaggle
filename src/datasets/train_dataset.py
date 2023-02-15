@@ -61,9 +61,10 @@ class trainMammo(Dataset):
             y = (self.cfg.INPUT.IMG_HEIGHT - ch) // 2
             image[y:y + ch, x:x + cw] = crop
             
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         if self.transform:
-            image = self.transform(image=image)
+            image = self.transform(image=image)['image']
+        else:
+            image = image.unsqueeze(0) 
         
         label = d['cancer']
         img_meta = {
@@ -75,7 +76,8 @@ class trainMammo(Dataset):
 
         aux_target = d[self.cfg.INPUT.AUX_TARGETS].to_numpy(dtype=int)
         
-        return image['image'], label, aux_target, img_meta
+        #image CHW con transforms, HWC altrimenti
+        return image, label, aux_target, img_meta
 
 
 #Per avere 1 esempio positivo su ratio
